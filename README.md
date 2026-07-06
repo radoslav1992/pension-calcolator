@@ -75,11 +75,40 @@ To serve the site on the production domain, add a custom domain to the
 `pension-calculator` Worker (Cloudflare dashboard → Workers → Settings →
 Domains & Routes).
 
-## Updating the yearly parameters
+## Data sources and updates
 
-All budget-law parameters (average/minimum insurable income, accrual rate)
-live in `PARAMS` in `src/lib/pension.ts`; the age/service schedule is in
-`reqAge`/`reqSvc` next to it. Copy lives in `src/i18n/`.
+The calculator's numbers fall into three tiers:
+
+1. **Law-fixed** (Social Insurance Code — Art. 68 age/service schedule,
+   1.35 %/year accrual, 0.4 %/month early-retirement reduction, 19.8 %
+   service-purchase rate, fixed €/BGN rate): constants in
+   `src/lib/pension.ts`. They change only when parliament amends the Code.
+2. **Annual** (minimum insurable income for the self-insured, set by the
+   State Social Insurance Budget Act each December): `minIncome` in
+   `src/data/params.json` — update once a year by hand.
+3. **Monthly** (national average insurable income, published by
+   [NOI](https://nssi.bg/publikacii/analizi/sreden-osiguritelen-dohod/) —
+   the figure the Art. 70 pension formula uses): `avgIncome` in
+   `src/data/params.json`, refreshed automatically.
+
+### Automatic refresh (`.github/workflows/update-data.yml`)
+
+Every Monday (and on manual dispatch) the workflow runs
+`scripts/update-params.mjs`, which reads NOI's WordPress API (falling back
+to the analysis page), extracts the latest 12-month average insurable
+income, and — only if the value passed absolute-bounds and max-drift (25 %)
+sanity checks — commits the new `params.json` to the branch and dispatches
+the deploy workflow (a plain bot push cannot trigger `on: push` workflows,
+so the deploy is dispatched explicitly).
+
+If NOI is unreachable or the page format changes, the run fails and GitHub
+notifies you; the site keeps serving the last good value, and the home page
+shows the period and date the figure refers to. Manual fallback: edit
+`src/data/params.json` and push.
+
+Test the parser offline: `node scripts/update-params.mjs --fixture <file>`.
+
+Note: scheduled workflows only run on the repository's **default branch**.
 
 ## Disclaimer
 
