@@ -1,0 +1,25 @@
+{
+  "name": "pension-calculator",
+  "version": "1.0.0",
+  "description": "Пенсионен калкулатор — Bulgarian pension calculator (Astro + Cloudflare Workers)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler dev",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.4.0",
+    "@fontsource-variable/sofia-sans": "^5.2.0",
+    "@fontsource-variable/sofia-sans-condensed": "^5.2.0",
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

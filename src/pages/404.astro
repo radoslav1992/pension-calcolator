@@ -1,0 +1,84 @@
+---
+import '../styles/global.css';
+import { routes } from '../lib/routes';
+import { common } from '../i18n/common';
+
+// Served by Cloudflare Workers for every unknown URL (not_found_handling:
+// "404-page"), so it is bilingual and excluded from search indexes.
+const bg = common.bg;
+const en = common.en;
+---
+
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 — {bg.notFoundTitle} · {en.notFoundTitle}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4f1ea" />
+  </head>
+  <body>
+    <div class="shell">
+      <div class="container nf">
+        <div class="mark" aria-hidden="true">П</div>
+        <p class="code display">404</p>
+        <section>
+          <h1 class="display">{bg.notFoundTitle}</h1>
+          <p>{bg.notFoundBody}</p>
+          <a href={routes.home.bg} class="btn-gold">{bg.notFoundCta}</a>
+        </section>
+        <section lang="en">
+          <h1 class="display">{en.notFoundTitle}</h1>
+          <p>{en.notFoundBody}</p>
+          <a href={routes.home.en} class="btn-gold">{en.notFoundCta}</a>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  .nf {
+    max-width: 640px;
+    padding-top: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .mark {
+    width: 44px;
+    height: 44px;
+    background: var(--green);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: #f4f1ea;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+  }
+
+  .code {
+    margin: 0;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--green);
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
+  }
+
+  section p {
+    margin: 0 0 18px;
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 520px;
+    text-wrap: pretty;
+  }
+</style>

@@ -1,0 +1,774 @@
+---
+import {
+  DEFAULTS,
+  PARAMS,
+  computeTab1,
+  computeTab2,
+  computeTab3,
+  computeTab4,
+  makeFormatters,
+} from '../lib/pension';
+import { homeT } from '../i18n/home';
+import { locales } from '../i18n/common';
+import type { Lang } from '../lib/routes';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = homeT[lang];
+const locale = locales[lang];
+const fmt = makeFormatters(locale, { yearsShort: t.yearsShort, months: t.months });
+
+// Pre-render the default state so the full calculator (all four tabs) is
+// meaningful in the static HTML; the client script re-computes on input.
+const D = DEFAULTS;
+const r1 = computeTab1(D);
+const r2 = computeTab2(D);
+const r3 = computeTab3(D);
+const r4 = computeTab4(D);
+
+const calcI18n = JSON.stringify({
+  locale,
+  yearsShort: t.yearsShort,
+  months: t.months,
+  atAge: t.atAge,
+  mNever: t.mNever,
+  mEarly: t.mEarly,
+});
+---
+
+<section class="calc" id="calculator">
+  <script type="application/json" data-calc-i18n set:html={calcI18n} />
+
+  <div class="tabs" role="tablist">
+    {
+      t.tabs.map((label, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`calc-tab-${i}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          aria-controls={`calc-panel-${i}`}
+          class:list={['tab-btn', { active: i === 0 }]}
+          data-tab-btn={i}
+        >
+          {label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="calc-grid">
+    <!-- FORM CARD -->
+    <div class="card form-card">
+      <div
+        class="panel fields"
+        data-tab-panel="0"
+        role="tabpanel"
+        id="calc-panel-0"
+        aria-labelledby="calc-tab-0"
+      >
+        <div class="field">
+          <div class="eyebrow" id="gender-label">{t.gender}</div>
+          <div class="seg" role="group" aria-labelledby="gender-label">
+            <button type="button" class="seg-btn" data-gender="m" aria-pressed="false"
+              >{t.male}</button
+            >
+            <button type="button" class="seg-btn active" data-gender="f" aria-pressed="true"
+              >{t.female}</button
+            >
+          </div>
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-birthYear"
+            >{t.birthYear} — <span class="val" data-val="birthYear">{D.birthYear}</span></label
+          >
+          <input
+            type="range"
+            id="in-birthYear"
+            data-key="birthYear"
+            min="1958"
+            max="1998"
+            value={D.birthYear}
+          />
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-serviceNow"
+            >{t.serviceSoFar} — <span class="val" data-val="serviceNow"
+              >{D.serviceNow} {t.yearsShort}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-serviceNow"
+            data-key="serviceNow"
+            min="0"
+            max="45"
+            value={D.serviceNow}
+          />
+          <p class="hint">{t.serviceHint}</p>
+        </div>
+      </div>
+
+      <div
+        class="panel fields"
+        data-tab-panel="1"
+        role="tabpanel"
+        id="calc-panel-1"
+        aria-labelledby="calc-tab-1"
+        hidden
+      >
+        <div class="field">
+          <label class="eyebrow" for="in-svcYears"
+            >{t.serviceTotal} — <span class="val" data-val="svcYears"
+              >{D.svcYears} {t.yearsShort}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-svcYears"
+            data-key="svcYears"
+            min="15"
+            max="45"
+            value={D.svcYears}
+          />
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-coefRaw"
+            >{t.coef} — <span class="val" data-val="coefRaw">{(D.coefRaw / 100).toFixed(2)}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-coefRaw"
+            data-key="coefRaw"
+            min="50"
+            max="400"
+            value={D.coefRaw}
+          />
+          <p class="hint">{t.coefHint}</p>
+        </div>
+      </div>
+
+      <div
+        class="panel fields"
+        data-tab-panel="2"
+        role="tabpanel"
+        id="calc-panel-2"
+        aria-labelledby="calc-tab-2"
+        hidden
+      >
+        <div class="field-pair">
+          <div class="field">
+            <label class="eyebrow" for="in-curAge"
+              >{t.curAge} — <span class="val" data-val="curAge">{D.curAge}</span></label
+            >
+            <input type="range" id="in-curAge" data-key="curAge" min="25" max="64" value={D.curAge} />
+          </div>
+          <div class="field">
+            <label class="eyebrow" for="in-retAge"
+              >{t.retAge} — <span class="val" data-val="retAge">{D.retAge}</span></label
+            >
+            <input type="range" id="in-retAge" data-key="retAge" min="60" max="70" value={D.retAge} />
+          </div>
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-balance"
+            >{t.balance} — <span class="val" data-val="balance">{fmt.eur(D.balance)}</span></label
+          >
+          <input
+            type="range"
+            id="in-balance"
+            data-key="balance"
+            min="0"
+            max="60000"
+            step="500"
+            value={D.balance}
+          />
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-salary"
+            >{t.salary} — <span class="val" data-val="salary">{fmt.eur(D.salary)}</span></label
+          >
+          <input
+            type="range"
+            id="in-salary"
+            data-key="salary"
+            min="620"
+            max="4000"
+            step="10"
+            value={D.salary}
+          />
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-yieldRaw"
+            >{t.yield} — <span class="val" data-val="yieldRaw">{(D.yieldRaw / 10).toFixed(1)}%</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-yieldRaw"
+            data-key="yieldRaw"
+            min="10"
+            max="70"
+            value={D.yieldRaw}
+          />
+        </div>
+      </div>
+
+      <div
+        class="panel fields"
+        data-tab-panel="3"
+        role="tabpanel"
+        id="calc-panel-3"
+        aria-labelledby="calc-tab-3"
+        hidden
+      >
+        <div class="field">
+          <label class="eyebrow" for="in-missingMonths"
+            >{t.missingMonths} — <span class="val" data-val="missingMonths"
+              >{D.missingMonths} {t.months}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-missingMonths"
+            data-key="missingMonths"
+            min="0"
+            max="60"
+            value={D.missingMonths}
+          />
+          <p class="hint">{t.missingHint}</p>
+        </div>
+        <div class="divider"></div>
+        <div class="field">
+          <label class="eyebrow" for="in-earlyMonths"
+            >{t.earlyMonths} — <span class="val" data-val="earlyMonths"
+              >{D.earlyMonths} {t.months}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-earlyMonths"
+            data-key="earlyMonths"
+            min="0"
+            max="12"
+            value={D.earlyMonths}
+          />
+        </div>
+        <div class="field">
+          <label class="eyebrow" for="in-basePension"
+            >{t.basePension} — <span class="val" data-val="basePension">{fmt.eur(D.basePension)}</span
+            ></label
+          >
+          <input
+            type="range"
+            id="in-basePension"
+            data-key="basePension"
+            min="300"
+            max="2500"
+            step="10"
+            value={D.basePension}
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT CARD -->
+    <div class="card result-card" aria-live="polite">
+      <div class="panel result" data-tab-panel="0">
+        <div class="r-title">{t.r1Title}</div>
+        <div class="r-big" data-out="retireYearBig">{r1.showYear}</div>
+        <div class="r-sub lg" data-out="retireAgeLine">{t.atAge} {r1.ageAtRetirement}</div>
+        <div class="rows">
+          <div class="row">
+            <span>{t.reqAge}</span><span class="v" data-out="reqAgeLine"
+              >{r1.svcOk ? fmt.fmtYM(r1.reqAgeVal) : `67 ${t.yearsShort}`}</span
+            >
+          </div>
+          <div class="row">
+            <span>{t.reqService}</span><span class="v" data-out="reqSvcLine"
+              >{r1.svcOk ? fmt.fmtYM(r1.reqSvcVal) : `15 ${t.yearsShort}`}</span
+            >
+          </div>
+          <div class="row">
+            <span>{t.projService}</span><span class="v" data-out="projSvcLine"
+              >{fmt.fmtYM(r1.projSvc)}</span
+            >
+          </div>
+        </div>
+        <p class="r-note" data-out="retireNote">{r1.svcOk ? t.mEarly : t.mNever}</p>
+      </div>
+
+      <div class="panel result" data-tab-panel="1" hidden>
+        <div class="r-title">{t.r2Title}</div>
+        <div class="r-big" data-out="statePensionBig">{fmt.eur(r2.pension)}</div>
+        <div class="r-sub" data-out="statePensionBgn">{fmt.bgn(r2.pension)}</div>
+        <div class="r-block">
+          <div class="r-title sm">{t.formula}</div>
+          <div class="rows tight">
+            <div class="row sm"><span>{t.fAvgIncome}</span><span class="v">{fmt.eur(PARAMS.avgIncome)}</span></div>
+            <div class="row sm">
+              <span>× {t.fCoef}</span><span class="v" data-out="coefFormula"
+                >{(D.coefRaw / 100).toFixed(2)}</span
+              >
+            </div>
+            <div class="row sm">
+              <span>× {t.fAccrual}</span><span class="v" data-out="fAccrualVal"
+                >{(PARAMS.accrual * 100).toFixed(2)}% × {D.svcYears} {t.yearsShort}</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="r-block">
+          <div class="r-title sm chart-title">{t.deferChart}</div>
+          <div class="chart">
+            {
+              r2.bars.map((b, i) => (
+                <div class="bar">
+                  <div class="bar-val" data-bar-val={i}>
+                    {Math.round(b.v).toLocaleString(locale)}
+                  </div>
+                  <div
+                    class:list={['bar-fill', { first: i === 0 }]}
+                    data-bar-fill={i}
+                    style={`height:${b.h}px;`}
+                  />
+                  <div class="bar-year">{b.year}</div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="panel result" data-tab-panel="2" hidden>
+        <div class="r-title">{t.r3Title}</div>
+        <div class="r-big" data-out="upfBig">{fmt.eur(r3.monthly)}</div>
+        <div class="r-sub" data-out="upfBgn">{fmt.bgn(r3.monthly)}</div>
+        <div class="rows">
+          <div class="row"><span>{t.upfFv}</span><span class="v" data-out="upfFvVal">{fmt.eur(r3.fv)}</span></div>
+          <div class="row">
+            <span>{t.upfContrib}</span><span class="v" data-out="upfContribVal"
+              >{fmt.eur(r3.totalContrib)}</span
+            >
+          </div>
+          <div class="row">
+            <span>{t.upfGrowth}</span><span class="v" data-out="upfGrowthVal"
+              >{fmt.eur(r3.growth)}</span
+            >
+          </div>
+          <div class="row">
+            <span>{t.upfYears}</span><span class="v" data-out="upfYearsVal">{r3.years}</span>
+          </div>
+        </div>
+        <p class="r-note">{t.upfNote}</p>
+      </div>
+
+      <div class="panel result" data-tab-panel="3" hidden>
+        <div class="r-title">{t.r4Title}</div>
+        <div class="r-big" data-out="buyBig">{fmt.eur(r4.buyCost)}</div>
+        <div class="r-sub" data-out="buyBgn">{fmt.bgn(r4.buyCost)}</div>
+        <div class="rows">
+          <div class="row">
+            <span>{t.buyPerMonth}</span><span class="v">{fmt.eur(r4.perMonth, 2)}</span>
+          </div>
+          <div class="row">
+            <span>{t.reduction}</span><span class="v warn" data-out="reductionVal"
+              >−{r4.redPct.toFixed(1)}%</span
+            >
+          </div>
+          <div class="row">
+            <span>{t.reducedPension}</span><span class="v" data-out="reducedPensionVal"
+              >{fmt.eur(r4.reduced)}</span
+            >
+          </div>
+        </div>
+        <p class="r-note">{t.buyNote}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    DEFAULTS,
+    computeTab1,
+    computeTab2,
+    computeTab3,
+    computeTab4,
+    makeFormatters,
+    type CalcState,
+    type Gender,
+  } from '../lib/pension';
+
+  const root = document.getElementById('calculator');
+
+  if (root) {
+    const cfg = JSON.parse(root.querySelector('script[data-calc-i18n]')!.textContent!) as {
+      locale: string;
+      yearsShort: string;
+      months: string;
+      atAge: string;
+      mNever: string;
+      mEarly: string;
+    };
+    const fmt = makeFormatters(cfg.locale, cfg);
+    const state: CalcState = { ...DEFAULTS };
+
+    const setOut = (name: string, text: string) => {
+      root.querySelectorAll<HTMLElement>(`[data-out="${name}"]`).forEach((el) => {
+        el.textContent = text;
+      });
+    };
+    const setVal = (key: string, text: string) => {
+      root.querySelectorAll<HTMLElement>(`[data-val="${key}"]`).forEach((el) => {
+        el.textContent = text;
+      });
+    };
+
+    const valFormatters: Record<string, (v: number) => string> = {
+      birthYear: String,
+      serviceNow: (v) => `${v} ${cfg.yearsShort}`,
+      svcYears: (v) => `${v} ${cfg.yearsShort}`,
+      coefRaw: (v) => (v / 100).toFixed(2),
+      curAge: String,
+      retAge: String,
+      balance: (v) => fmt.eur(v),
+      salary: (v) => fmt.eur(v),
+      yieldRaw: (v) => (v / 10).toFixed(1) + '%',
+      missingMonths: (v) => `${v} ${cfg.months}`,
+      earlyMonths: (v) => `${v} ${cfg.months}`,
+      basePension: (v) => fmt.eur(v),
+    };
+
+    function renderTab1() {
+      const r = computeTab1(state);
+      setOut('retireYearBig', String(r.showYear));
+      setOut('retireAgeLine', `${cfg.atAge} ${r.ageAtRetirement}`);
+      setOut('reqAgeLine', r.svcOk ? fmt.fmtYM(r.reqAgeVal) : `67 ${cfg.yearsShort}`);
+      setOut('reqSvcLine', r.svcOk ? fmt.fmtYM(r.reqSvcVal) : `15 ${cfg.yearsShort}`);
+      setOut('projSvcLine', fmt.fmtYM(r.projSvc));
+      setOut('retireNote', r.svcOk ? cfg.mEarly : cfg.mNever);
+    }
+
+    function renderTab2() {
+      const r = computeTab2(state);
+      setOut('statePensionBig', fmt.eur(r.pension));
+      setOut('statePensionBgn', fmt.bgn(r.pension));
+      setOut('coefFormula', r.coef.toFixed(2));
+      setOut('fAccrualVal', `1.35% × ${state.svcYears} ${cfg.yearsShort}`);
+      r.bars.forEach((b, i) => {
+        const val = root!.querySelector<HTMLElement>(`[data-bar-val="${i}"]`);
+        const fill = root!.querySelector<HTMLElement>(`[data-bar-fill="${i}"]`);
+        if (val) val.textContent = Math.round(b.v).toLocaleString(cfg.locale);
+        if (fill) fill.style.height = `${b.h}px`;
+      });
+    }
+
+    function renderTab3() {
+      const r = computeTab3(state);
+      setOut('upfBig', fmt.eur(r.monthly));
+      setOut('upfBgn', fmt.bgn(r.monthly));
+      setOut('upfFvVal', fmt.eur(r.fv));
+      setOut('upfContribVal', fmt.eur(r.totalContrib));
+      setOut('upfGrowthVal', fmt.eur(r.growth));
+      setOut('upfYearsVal', String(r.years));
+    }
+
+    function renderTab4() {
+      const r = computeTab4(state);
+      setOut('buyBig', fmt.eur(r.buyCost));
+      setOut('buyBgn', fmt.bgn(r.buyCost));
+      setOut('reductionVal', `−${r.redPct.toFixed(1)}%`);
+      setOut('reducedPensionVal', fmt.eur(r.reduced));
+    }
+
+    const renderers = [renderTab1, renderTab2, renderTab3, renderTab4];
+
+    root.querySelectorAll<HTMLInputElement>('input[type="range"][data-key]').forEach((input) => {
+      input.addEventListener('input', () => {
+        const key = input.dataset.key as keyof Omit<CalcState, 'gender'>;
+        state[key] = Number(input.value);
+        setVal(key, valFormatters[key]!(state[key]));
+        renderers.forEach((r) => r());
+      });
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-gender]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.gender = btn.dataset.gender as Gender;
+        root.querySelectorAll<HTMLButtonElement>('[data-gender]').forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-pressed', String(active));
+        });
+        renderTab1();
+      });
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-tab-btn]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const index = btn.dataset.tabBtn!;
+        root.querySelectorAll<HTMLButtonElement>('[data-tab-btn]').forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-selected', String(active));
+        });
+        root.querySelectorAll<HTMLElement>('[data-tab-panel]').forEach((panel) => {
+          panel.hidden = panel.dataset.tabPanel !== index;
+        });
+      });
+    });
+  }
+</script>
+
+<style>
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .tab-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--input-border);
+  }
+
+  .tab-btn.active {
+    background: var(--ink);
+    color: #f4f1ea;
+    border-color: var(--ink);
+  }
+
+  .calc-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .card {
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .form-card {
+    flex: 1 1 380px;
+    min-width: 300px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  .result-card {
+    flex: 1 1 340px;
+    min-width: 300px;
+    background: var(--green-deep);
+    color: #f4f1ea;
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  .fields {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .field .eyebrow {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .field .val {
+    color: var(--green);
+  }
+
+  .hint {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin: 6px 0 0;
+    text-wrap: pretty;
+  }
+
+  .field-pair {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .field-pair .field {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--line-softer);
+  }
+
+  .seg {
+    display: flex;
+    gap: 4px;
+    background: var(--seg-bg);
+    border-radius: 10px;
+    padding: 4px;
+    max-width: 280px;
+  }
+
+  .seg-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-muted);
+  }
+
+  .seg-btn.active {
+    background: var(--green);
+    color: #f4f1ea;
+  }
+
+  .result {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  .r-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--green-pale);
+  }
+
+  .r-title.sm {
+    margin-bottom: 6px;
+  }
+
+  .r-title.chart-title {
+    margin-bottom: 10px;
+  }
+
+  .r-big {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1;
+    margin: 14px 0 4px;
+  }
+
+  .r-sub {
+    font-size: 16px;
+    color: var(--green-mist);
+  }
+
+  .r-sub.lg {
+    font-size: 18px;
+  }
+
+  .r-block {
+    margin-top: 22px;
+  }
+
+  .rows {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rows.tight {
+    margin-top: 0;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(244, 241, 234, 0.18);
+    font-size: 15px;
+  }
+
+  .row.sm {
+    padding: 8px 0;
+    font-size: 14px;
+  }
+
+  .row > span:first-child {
+    color: var(--green-pale);
+  }
+
+  .row .v {
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .row .v.warn {
+    color: #e8a79b;
+  }
+
+  .r-note {
+    margin: 0;
+    margin-top: auto;
+    padding-top: 20px;
+    font-size: 14px;
+    color: var(--green-mist);
+    text-wrap: pretty;
+  }
+
+  .chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 110px;
+  }
+
+  .bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar-val {
+    font-size: 11px;
+    color: var(--green-mist);
+  }
+
+  .bar-fill {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: rgba(244, 241, 234, 0.45);
+  }
+
+  .bar-fill.first {
+    background: var(--gold);
+  }
+
+  .bar-year {
+    font-size: 11px;
+    color: var(--green-pale);
+  }
+</style>

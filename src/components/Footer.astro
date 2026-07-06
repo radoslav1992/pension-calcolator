@@ -1,0 +1,52 @@
+---
+import { footerPageIds, routes, type Lang } from '../lib/routes';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+  /** Override for the small print (the home page shows the calculator disclaimer). */
+  note?: string;
+}
+
+const { lang, note } = Astro.props;
+const t = common[lang];
+const links = footerPageIds.map((id, i) => ({ href: routes[id][lang], label: t.footLinks[i] }));
+---
+
+<footer class="site-footer">
+  <nav class="foot-links" aria-label="Footer">
+    {links.map((l) => <a href={l.href}>{l.label}</a>)}
+  </nav>
+  <p class="small-print">{note ?? t.smallPrint}</p>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 64px;
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+  }
+
+  .foot-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .foot-links a {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  .small-print {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-ghost);
+    max-width: 760px;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+</style>

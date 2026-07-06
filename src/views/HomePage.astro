@@ -1,0 +1,443 @@
+---
+import Base from '../layouts/Base.astro';
+import Calculator from '../components/Calculator.astro';
+import { routes, type Lang, type PageId } from '../lib/routes';
+import { homeT } from '../i18n/home';
+import { common, locales } from '../i18n/common';
+import { makeFormatters, reqAge, reqSvc } from '../lib/pension';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = homeT[lang];
+const c = common[lang];
+const fmt = makeFormatters(locales[lang], { yearsShort: t.yearsShort, months: t.months });
+
+const reqTable = [2026, 2027, 2028, 2029, 2031, 2034, 2037].map((y) => ({
+  year: y,
+  wa: fmt.fmtYM(reqAge(y, 'f')),
+  ws: fmt.fmtYM(reqSvc(y, 'f')),
+  ma: fmt.fmtYM(reqAge(y, 'm')),
+  ms: fmt.fmtYM(reqSvc(y, 'm')),
+}));
+
+const guidePages: PageId[] = ['guide2026', 'guideService', 'guideUpf'];
+const guideCards = t.guides.map((g, i) => ({ ...g, href: routes[guidePages[i]!][lang] }));
+
+const site = Astro.site!;
+const canonical = new URL(routes.home[lang], site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: c.siteName,
+    url: canonical,
+    inLanguage: lang,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: c.siteName,
+    url: canonical,
+    description: t.metaDescription,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web',
+    inLanguage: lang,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: lang,
+    mainEntity: t.faq.map(([q, a]) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  },
+];
+---
+
+<Base
+  lang={lang}
+  pageId="home"
+  title={t.metaTitle}
+  description={t.metaDescription}
+  jsonLd={jsonLd}
+  headerVariant="home"
+  footerNote={t.disclaimer}
+>
+  <main id="main">
+    <div class="hero">
+      <h1 class="display">{t.title}</h1>
+      <p class="subtitle">{t.subtitle}</p>
+    </div>
+
+    <Calculator lang={lang} />
+
+    <div class="content">
+      <section>
+        <h2 class="display">{t.s1Title}</h2>
+        <p class="intro">{t.s1Intro}</p>
+        <div class="pillars">
+          {
+            t.pillars.map((pil) => (
+              <div class="pillar-card">
+                <div class="pillar-n">{pil.n}</div>
+                <div class="pillar-title">{pil.title}</div>
+                <p>{pil.body}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section>
+        <h2 class="display">{t.s2Title}</h2>
+        <p class="intro">{t.s2Intro}</p>
+        <div class="table-wrap">
+          <table class="req-table">
+            <colgroup>
+              <col style="width:90px" />
+              <col />
+              <col />
+              <col />
+              <col />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>{t.thYear}</th>
+                <th>{t.thWAge}</th>
+                <th>{t.thWSvc}</th>
+                <th>{t.thMAge}</th>
+                <th>{t.thMSvc}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                reqTable.map((row) => (
+                  <tr>
+                    <th scope="row">{row.year}</th>
+                    <td>{row.wa}</td>
+                    <td>{row.ws}</td>
+                    <td>{row.ma}</td>
+                    <td>{row.ms}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="display">{t.s3Title}</h2>
+        <p class="intro">{t.s3Body1}</p>
+        <div class="formula">{t.s3Formula}</div>
+        <p class="intro">{t.s3Body2}</p>
+      </section>
+
+      <section>
+        <h2 class="display">{t.s4Title}</h2>
+        <div class="two-col">
+          <p>{t.s4Body1}</p>
+          <p>{t.s4Body2}</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="display faq-title">{t.faqTitle}</h2>
+        <div class="faq">
+          {
+            t.faq.map(([q, a]) => (
+              <details>
+                <summary>{q}</summary>
+                <p>{a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+
+      <section>
+        <h2 class="display faq-title">{t.guidesTitle}</h2>
+        <div class="guides">
+          {
+            guideCards.map((g) => (
+              <a href={g.href} class="guide-card">
+                <div class="guide-tag">{g.tag}</div>
+                <div class="guide-title">{g.title}</div>
+                <p>{g.desc}</p>
+                <div class="guide-more">{c.readMore} →</div>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="sources">
+        <p>{t.sources}</p>
+      </section>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .hero {
+    padding: 36px 0 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 1;
+  }
+
+  .subtitle {
+    margin: 12px 0 0;
+    font-size: 18px;
+    color: var(--ink-muted);
+    max-width: 560px;
+    text-wrap: pretty;
+  }
+
+  .content {
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  section h2 {
+    margin: 0;
+    font-size: 32px;
+    letter-spacing: 0.2px;
+  }
+
+  .intro {
+    margin: 12px 0 0;
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 680px;
+    text-wrap: pretty;
+  }
+
+  .pillars {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .pillar-card {
+    flex: 1 1 260px;
+    min-width: 240px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px;
+  }
+
+  .pillar-n {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--green);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .pillar-title {
+    font-weight: 700;
+    font-size: 19px;
+    margin: 10px 0 8px;
+    text-wrap: pretty;
+  }
+
+  .pillar-card p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    margin-top: 24px;
+  }
+
+  .req-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .req-table thead th {
+    padding: 16px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .req-table thead th:first-child {
+    padding-left: 24px;
+  }
+
+  .req-table thead th:last-child {
+    padding-right: 24px;
+  }
+
+  .req-table tbody th,
+  .req-table tbody td {
+    padding: 13px 12px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .req-table tbody th {
+    padding-left: 24px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .req-table tbody td:last-child {
+    padding-right: 24px;
+  }
+
+  .formula {
+    margin: 20px 0;
+    background: var(--green-deep);
+    color: #f4f1ea;
+    border-radius: 12px;
+    padding: 20px 26px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.3px;
+    max-width: 680px;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .two-col p {
+    flex: 1 1 300px;
+    min-width: 260px;
+    margin: 0;
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .faq-title {
+    margin-bottom: 20px !important;
+  }
+
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .faq details {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 24px;
+  }
+
+  .faq summary {
+    font-weight: 700;
+    font-size: 17px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .faq p {
+    margin: 12px 0 0;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 680px;
+    text-wrap: pretty;
+  }
+
+  .guides {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .guide-card {
+    flex: 1 1 280px;
+    min-width: 250px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .guide-tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  .guide-title {
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.25;
+    text-wrap: pretty;
+  }
+
+  .guide-card p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .guide-more {
+    margin-top: auto;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--green);
+  }
+
+  .sources {
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+  }
+
+  .sources p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-ghost);
+    line-height: 1.6;
+    max-width: 760px;
+    text-wrap: pretty;
+  }
+</style>

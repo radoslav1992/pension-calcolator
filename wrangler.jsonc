@@ -1,0 +1,13 @@
+// Cloudflare Workers configuration (static assets, no server code needed —
+// the whole site is pre-rendered at build time).
+// Deploy with: npm run deploy
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pension-calculator",
+  "compatibility_date": "2026-06-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import { routes, type Lang } from '../lib/routes';
+import { aboutT } from '../i18n/pages';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = aboutT[lang];
+const c = common[lang];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: t.metaTitle,
+    description: t.metaDescription,
+    url: new URL(routes.about[lang], Astro.site).href,
+    inLanguage: lang,
+  },
+];
+---
+
+<Base lang={lang} pageId="about" title={t.metaTitle} description={t.metaDescription} jsonLd={jsonLd}>
+  <main id="main" class="article-main">
+    <a href={routes.home[lang]} class="back-link">← {c.back}</a>
+    <h1 class="display article-h1">{t.h1}</h1>
+    <p class="lead">{t.lead}</p>
+
+    <div class="article-sections">
+      {
+        t.sections.map((sec) => (
+          <section>
+            <h2>{sec.h}</h2>
+            {sec.ps.map((p) => (
+              <p>{p}</p>
+            ))}
+          </section>
+        ))
+      }
+    </div>
+
+    <div class="cta-card">
+      <div class="cta-title">{t.ctaTitle}</div>
+      <p>{t.ctaBody}</p>
+      <a href={routes.home[lang]} class="btn-gold">{t.ctaBtn}</a>
+    </div>
+  </main>
+</Base>

@@ -1,0 +1,52 @@
+---
+import { routes, type Lang, type PageId } from '../lib/routes';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+  pageId: PageId;
+}
+
+const { lang, pageId } = Astro.props;
+---
+
+<nav class="lang-toggle" aria-label={common[lang].langLabel}>
+  <a
+    href={routes[pageId].bg}
+    class:list={['pill', { active: lang === 'bg' }]}
+    lang="bg"
+    data-setlang="bg"
+    aria-current={lang === 'bg' ? 'page' : undefined}>БГ</a
+  >
+  <a
+    href={routes[pageId].en}
+    class:list={['pill', { active: lang === 'en' }]}
+    lang="en"
+    data-setlang="en"
+    aria-current={lang === 'en' ? 'page' : undefined}>EN</a
+  >
+</nav>
+
+<style>
+  .lang-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--pill-bg);
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  .pill {
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .pill.active {
+    background: var(--green);
+    color: #f4f1ea;
+  }
+</style>
