@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import { routes, type Lang } from '../lib/routes';
+import { privacyT } from '../i18n/pages';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = privacyT[lang];
+const c = common[lang];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: t.metaTitle,
+    description: t.metaDescription,
+    url: new URL(routes.privacy[lang], Astro.site).href,
+    inLanguage: lang,
+  },
+];
+---
+
+<Base
+  lang={lang}
+  pageId="privacy"
+  title={t.metaTitle}
+  description={t.metaDescription}
+  jsonLd={jsonLd}
+>
+  <main id="main" class="article-main">
+    <a href={routes.home[lang]} class="back-link">← {c.back}</a>
+    <h1 class="display article-h1 privacy-h1">{t.h1}</h1>
+    <p class="article-meta">{t.updated}</p>
+    <p class="lead">{t.lead}</p>
+
+    <div class="article-sections compact">
+      {
+        t.sections.map((sec) => (
+          <section>
+            <h2>{sec.h}</h2>
+            {sec.ps.map((p) => (
+              <p>{p}</p>
+            ))}
+          </section>
+        ))
+      }
+    </div>
+  </main>
+</Base>
+
+<style>
+  .privacy-h1 {
+    font-size: clamp(34px, 5vw, 48px);
+  }
+</style>

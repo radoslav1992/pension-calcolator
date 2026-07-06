@@ -1,0 +1,105 @@
+---
+import { type Lang } from '../lib/routes';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = common[lang];
+---
+
+<div class="cookie-banner" id="cookie-banner" hidden>
+  <p>{t.cookieText}</p>
+  <div class="cookie-actions">
+    <button type="button" class="ok" data-cookie="ok">{t.cookieOk}</button>
+    <button type="button" class="no" data-cookie="no">{t.cookieNo}</button>
+  </div>
+</div>
+
+<script>
+  const banner = document.getElementById('cookie-banner');
+  if (banner) {
+    let choice: string | null = null;
+    try {
+      choice = localStorage.getItem('pk_cookie');
+    } catch {
+      /* storage unavailable — keep the banner hidden */
+      choice = 'ok';
+    }
+    if (!choice) banner.hidden = false;
+    banner.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-cookie]');
+      if (!btn) return;
+      try {
+        localStorage.setItem('pk_cookie', btn.dataset.cookie!);
+      } catch {
+        /* ignore */
+      }
+      banner.hidden = true;
+      // Consent granted: this is the place to lazily load analytics/ads
+      // (e.g. Google Analytics) once the site has a measurement ID.
+    });
+  }
+</script>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    background: var(--ink);
+    color: #f4f1ea;
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    max-width: 1048px;
+    margin: 0 auto;
+    z-index: 50;
+  }
+
+  .cookie-banner[hidden] {
+    display: none;
+  }
+
+  .cookie-banner p {
+    margin: 0;
+    flex: 1 1 300px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #d8dcd4;
+  }
+
+  .cookie-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .cookie-actions button {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .cookie-actions .ok {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    font-weight: 700;
+  }
+
+  .cookie-actions .no {
+    background: transparent;
+    color: #d8dcd4;
+    border: 1px solid rgba(244, 241, 234, 0.35);
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,213 @@
+---
+import Base from '../layouts/Base.astro';
+import { routes, type Lang } from '../lib/routes';
+import { guides, guideDates, type GuideId } from '../i18n/guides';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+  guideId: GuideId;
+}
+
+const { lang, guideId } = Astro.props;
+const t = guides[guideId][lang];
+const c = common[lang];
+const dates = guideDates[guideId];
+const url = new URL(routes[guideId][lang], Astro.site).href;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: t.h1,
+    description: t.metaDescription,
+    inLanguage: lang,
+    datePublished: dates.published,
+    dateModified: dates.modified,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    image: [new URL('/og.png', Astro.site).href],
+    author: { '@type': 'Organization', name: c.siteName, url: new URL(routes.home[lang], Astro.site).href },
+    publisher: { '@type': 'Organization', name: c.siteName },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: c.footLinks[0],
+        item: new URL(routes.home[lang], Astro.site).href,
+      },
+      { '@type': 'ListItem', position: 2, name: t.h1, item: url },
+    ],
+  },
+];
+---
+
+<Base
+  lang={lang}
+  pageId={guideId}
+  title={t.metaTitle}
+  description={t.metaDescription}
+  ogType="article"
+  jsonLd={jsonLd}
+>
+  <main id="main" class="article-main">
+    <a href={routes.home[lang]} class="back-link">← {c.back}</a>
+    <article>
+      <p class="kicker">{t.kicker}</p>
+      <h1 class="display article-h1">{t.h1}</h1>
+      <p class="article-meta">{t.meta}</p>
+      <p class="lead">{t.lead}</p>
+
+      {
+        t.facts && (
+          <div class="facts">
+            <div class="facts-title">{t.factsTitle}</div>
+            <div class="facts-rows">
+              {t.facts.map((fact) => (
+                <div class="facts-row">
+                  <span class="k">{fact.k}</span>
+                  <span class="v">{fact.v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      {
+        t.steps && (
+          <div class="steps">
+            {t.steps.map((step) => (
+              <div class="step">
+                <div class="step-n" aria-hidden="true">
+                  {step.n}
+                </div>
+                <div>
+                  <h2 class="step-h">{step.h}</h2>
+                  <p>{step.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      }
+
+      <div class="article-sections">
+        {
+          t.sections.map((sec) => (
+            <section>
+              <h2>{sec.h}</h2>
+              {sec.ps.map((p) => (
+                <p>{p}</p>
+              ))}
+            </section>
+          ))
+        }
+      </div>
+
+      <div class="cta-card">
+        <div class="cta-title">{t.ctaTitle}</div>
+        <p>{t.ctaBody}</p>
+        <a href={routes.home[lang]} class="btn-gold">{t.ctaBtn}</a>
+      </div>
+
+      <nav class="related" aria-label={c.relatedTitle}>
+        <div class="eyebrow related-title">{c.relatedTitle}</div>
+        <div class="related-links">
+          {t.related.map((rel) => <a href={routes[rel.page][lang]}>{rel.label} →</a>)}
+        </div>
+      </nav>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .facts {
+    margin-top: 28px;
+    background: var(--green-deep);
+    color: #f4f1ea;
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+
+  .facts-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--green-pale);
+    margin-bottom: 12px;
+  }
+
+  .facts-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .facts-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-top: 1px solid rgba(244, 241, 234, 0.18);
+    font-size: 15px;
+  }
+
+  .facts-row .k {
+    color: var(--green-pale);
+  }
+
+  .facts-row .v {
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 32px;
+  }
+
+  .step {
+    display: flex;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 26px;
+  }
+
+  .step-n {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--green);
+    color: #f4f1ea;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 19px;
+  }
+
+  .step-h {
+    margin: 0 0 6px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 18px;
+    text-wrap: pretty;
+  }
+
+  .step p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+</style>

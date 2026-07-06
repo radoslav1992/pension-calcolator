@@ -1,0 +1,103 @@
+---
+import { routes, type Lang, type PageId } from '../lib/routes';
+import { common } from '../i18n/common';
+import LangToggle from './LangToggle.astro';
+
+interface Props {
+  lang: Lang;
+  pageId: PageId;
+  /** 'home' shows the About/Contact nav; 'sub' links the brand back home. */
+  variant?: 'home' | 'sub';
+}
+
+const { lang, pageId, variant = 'sub' } = Astro.props;
+const t = common[lang];
+---
+
+<header class="site-header">
+  {
+    variant === 'home' ? (
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          П
+        </span>
+        <span class="brand-name">{t.brand}</span>
+      </div>
+    ) : (
+      <a class="brand" href={routes.home[lang]}>
+        <span class="mark" aria-hidden="true">
+          П
+        </span>
+        <span class="brand-name">{t.brand}</span>
+      </a>
+    )
+  }
+  <div class="header-right">
+    {
+      variant === 'home' && (
+        <nav class="main-nav" aria-label={t.brand}>
+          <a href={routes.about[lang]}>{t.navAbout}</a>
+          <a href={routes.contact[lang]}>{t.navContact}</a>
+        </nav>
+      )
+    }
+    <LangToggle lang={lang} pageId={pageId} />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 0 8px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .mark {
+    width: 36px;
+    height: 36px;
+    background: var(--green);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #f4f1ea;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+  }
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: 20px;
+  }
+
+  .main-nav a {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+  }
+</style>

@@ -1,0 +1,218 @@
+---
+import Base from '../layouts/Base.astro';
+import { routes, type Lang } from '../lib/routes';
+import { contactT } from '../i18n/pages';
+import { common } from '../i18n/common';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = contactT[lang];
+const c = common[lang];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: t.metaTitle,
+    description: t.metaDescription,
+    url: new URL(routes.contact[lang], Astro.site).href,
+    inLanguage: lang,
+  },
+];
+---
+
+<Base
+  lang={lang}
+  pageId="contact"
+  title={t.metaTitle}
+  description={t.metaDescription}
+  jsonLd={jsonLd}
+>
+  <main id="main" class="article-main">
+    <a href={routes.home[lang]} class="back-link">← {c.back}</a>
+    <h1 class="display article-h1">{t.h1}</h1>
+    <p class="lead">{t.lead}</p>
+
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="eyebrow">{t.emailLabel}</div>
+        <a class="contact-value email" href="mailto:info@pensionen-kalkulator.bg"
+          >info@pensionen-kalkulator.bg</a
+        >
+        <p>{t.emailNote}</p>
+      </div>
+      <div class="contact-card">
+        <div class="eyebrow">{t.noiLabel}</div>
+        <div class="contact-value">0700 14 802</div>
+        <p>{t.noiNote}</p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2 class="display">{t.formTitle}</h2>
+      <div class="thanks" id="contact-thanks" hidden>{t.thanks}</div>
+      <form id="contact-form" novalidate>
+        <div class="form-row">
+          <label
+            >{t.fName}
+            <input type="text" name="name" autocomplete="name" required />
+          </label>
+          <label
+            >{t.fEmail}
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+        </div>
+        <label
+          >{t.fMsg}
+          <textarea name="message" rows="5" required></textarea>
+        </label>
+        <div>
+          <button type="submit">{t.fSend}</button>
+        </div>
+      </form>
+    </div>
+
+    <p class="privacy-note">{t.privacyNote}</p>
+  </main>
+</Base>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const thanks = document.getElementById('contact-thanks');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    form.hidden = true;
+    if (thanks) thanks.hidden = false;
+  });
+</script>
+
+<style>
+  .contact-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 36px;
+  }
+
+  .contact-card {
+    flex: 1 1 280px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .contact-value {
+    display: block;
+    font-weight: 700;
+    font-size: 19px;
+    margin-top: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-value.email {
+    color: var(--green);
+  }
+
+  .contact-card p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--ink-faint);
+    line-height: 1.5;
+  }
+
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 16px;
+  }
+
+  .form-card h2 {
+    margin: 0 0 18px;
+    font-size: 24px;
+  }
+
+  .thanks {
+    background: #eaf3ec;
+    border: 1px solid #bfd9c6;
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-size: 16px;
+    color: var(--green-deep);
+    font-weight: 600;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  form[hidden] {
+    display: none;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .form-row label {
+    flex: 1 1 220px;
+  }
+
+  form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  form input,
+  form textarea {
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 16px;
+    background: var(--input-bg);
+    color: var(--ink);
+  }
+
+  form textarea {
+    resize: vertical;
+  }
+
+  form button {
+    background: var(--green);
+    color: #f4f1ea;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .privacy-note {
+    margin: 20px 0 0;
+    font-size: 14px;
+    color: var(--ink-ghost);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+</style>
