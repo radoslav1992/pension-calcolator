@@ -3,7 +3,7 @@
 // Deploy with: npm run deploy
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "pension-calculator",
+  "name": "pension-calcolator",
   "compatibility_date": "2026-06-01",
   "assets": {
     "directory": "./dist",
