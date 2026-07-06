@@ -75,6 +75,14 @@ To serve the site on the production domain, add a custom domain to the
 `pension-calculator` Worker (Cloudflare dashboard → Workers → Settings →
 Domains & Routes).
 
+## Analytics
+
+Google Analytics 4 (measurement ID `G-K05J34BDTK`, set in
+`src/components/CookieConsent.astro`) loads **only after the visitor accepts
+the cookie banner** — and automatically on later visits while the stored
+consent (`pk_cookie` = `ok`) remains. Declining or ignoring the banner loads
+nothing, matching the consent-based promise in the privacy policy.
+
 ## Data sources and updates
 
 The calculator's numbers fall into three tiers:
