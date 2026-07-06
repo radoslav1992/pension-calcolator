@@ -31,7 +31,8 @@ Flows worth driving after a change:
 
 - `/` calculator: all four tabs (`[data-tab-btn]`), sliders (set `.value` and
   dispatch an `input` event), gender toggle, outputs via `[data-out=...]`.
-  Defaults: tab1 `2040`, tab2 `€689`, tab3 `€227`, tab4 `€2947`.
+  Defaults (with `avgIncome` 983.28 in `src/data/params.json`): tab1 `2040`,
+  tab2 `€589`, tab3 `€227`, tab4 `€2947`. Tab2 scales with `avgIncome`.
 - Language toggle `[data-setlang]` navigates `/` ↔ `/en/` and stores `pk_lang`.
 - Cookie banner `#cookie-banner`: visible on first load, hidden after a choice
   (localStorage `pk_cookie`), stays hidden on reload.

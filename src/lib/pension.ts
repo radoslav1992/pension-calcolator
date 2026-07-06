@@ -9,11 +9,25 @@
  *   - Art. 9a  — purchasing up to 5 years of missing service
  */
 
+import data from '../data/params.json';
+
 export const PARAMS = {
-  /** National average insurable income, EUR/month (2026). */
-  avgIncome: 1150,
-  /** Minimum insurable income for the self-insured, EUR/month (2026). */
-  minIncome: 620.2,
+  /**
+   * National average insurable income, EUR/month — the 12-month rolling
+   * figure NOI publishes monthly and uses in the Art. 70 pension formula.
+   * Kept in src/data/params.json, refreshed by scripts/update-params.mjs
+   * (weekly GitHub Action).
+   */
+  avgIncome: data.avgIncome,
+  /** The 12-month period the average refers to, e.g. "05.2025 – 04.2026". */
+  avgIncomePeriod: data.avgIncomePeriod,
+  /** ISO date of the last successful data refresh. */
+  avgIncomeUpdated: data.avgIncomeUpdated,
+  /**
+   * Minimum insurable income for the self-insured, EUR/month. Set once a
+   * year by the State Social Insurance Budget Act (ЗБДОО).
+   */
+  minIncome: data.minIncome,
   /** Accrual per year of service (Art. 70). */
   accrual: 0.0135,
   /** Fixed BGN per EUR conversion rate. */

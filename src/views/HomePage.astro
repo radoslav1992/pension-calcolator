@@ -4,7 +4,7 @@ import Calculator from '../components/Calculator.astro';
 import { routes, type Lang, type PageId } from '../lib/routes';
 import { homeT } from '../i18n/home';
 import { common, locales } from '../i18n/common';
-import { makeFormatters, reqAge, reqSvc } from '../lib/pension';
+import { PARAMS, makeFormatters, reqAge, reqSvc } from '../lib/pension';
 
 interface Props {
   lang: Lang;
@@ -22,6 +22,18 @@ const reqTable = [2026, 2027, 2028, 2029, 2031, 2034, 2037].map((y) => ({
   ma: fmt.fmtYM(reqAge(y, 'm')),
   ms: fmt.fmtYM(reqSvc(y, 'm')),
 }));
+
+const dataNote = t.dataNote
+  .replace('{value}', fmt.eur(PARAMS.avgIncome, 2))
+  .replace('{period}', PARAMS.avgIncomePeriod)
+  .replace(
+    '{date}',
+    new Date(PARAMS.avgIncomeUpdated).toLocaleDateString(locales[lang], {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
+  );
 
 const guidePages: PageId[] = ['guide2026', 'guideService', 'guideUpf'];
 const guideCards = t.guides.map((g, i) => ({ ...g, href: routes[guidePages[i]!][lang] }));
@@ -179,6 +191,7 @@ const jsonLd = [
 
       <section class="sources">
         <p>{t.sources}</p>
+        <p>{dataNote}</p>
       </section>
     </div>
   </main>
@@ -439,5 +452,9 @@ const jsonLd = [
     line-height: 1.6;
     max-width: 760px;
     text-wrap: pretty;
+  }
+
+  .sources p + p {
+    margin-top: 8px;
   }
 </style>

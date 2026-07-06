@@ -68,6 +68,7 @@ export interface HomeT {
   guidesTitle: string;
   guides: { tag: string; title: string; desc: string }[];
   sources: string;
+  dataNote: string;
   mNever: string;
   mEarly: string;
   atAge: string;
@@ -219,6 +220,8 @@ export const homeT: Record<Lang, HomeT> = {
     ],
     sources:
       'Правна рамка: Кодекс за социално осигуряване — чл. 68, 68а, 70 и 9а; данни на НОИ и НСИ. Параметрите в калкулатора са за 2026 г. и се актуализират ежегодно със Закона за бюджета на държавното обществено осигуряване.',
+    dataNote:
+      'Средният осигурителен доход ({value}) е по официални данни на НОИ за периода {period} — последна актуализация на {date}',
     mNever:
       'При тези данни стажът не достига — възможно е пенсиониране на 67 г. с минимум 15 г. действителен стаж.',
     mEarly: 'Възможно е и пенсиониране до 1 година по-рано с намаление 0,4% на месец.',
@@ -370,6 +373,8 @@ export const homeT: Record<Lang, HomeT> = {
     ],
     sources:
       'Legal framework: Social Insurance Code — Art. 68, 68a, 70 and 9a; NOI and NSI data. Calculator parameters are for 2026 and are updated annually with the State Social Insurance Budget Act.',
+    dataNote:
+      'The average insurable income ({value}) uses official NOI data for the period {period} — last updated on {date}.',
     mNever:
       'With these inputs the service requirement is not met — retirement is possible at 67 with at least 15 years of actual service.',
     mEarly: 'Retirement up to 1 year earlier is also possible, with a 0.4% reduction per month.',
