@@ -19,16 +19,41 @@ const t = common[lang];
 </div>
 
 <script>
+  const GA_ID = 'G-K05J34BDTK';
+
+  // Loads Google Analytics (gtag.js). Called only after the visitor consents —
+  // the privacy policy promises analytics are consent-based (GDPR Art. 6(1)(a)).
+  function loadAnalytics() {
+    if (document.getElementById('ga-loader')) return;
+    const script = document.createElement('script');
+    script.id = 'ga-loader';
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+    const w = window as any;
+    w.dataLayer = w.dataLayer || [];
+    w.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      w.dataLayer.push(arguments);
+    };
+    w.gtag('js', new Date());
+    w.gtag('config', GA_ID);
+  }
+
   const banner = document.getElementById('cookie-banner');
+  let choice: string | null = null;
+  let storageOk = true;
+  try {
+    choice = localStorage.getItem('pk_cookie');
+  } catch {
+    /* storage unavailable — keep the banner hidden, never load analytics */
+    storageOk = false;
+  }
+
+  if (choice === 'ok') loadAnalytics();
+
   if (banner) {
-    let choice: string | null = null;
-    try {
-      choice = localStorage.getItem('pk_cookie');
-    } catch {
-      /* storage unavailable — keep the banner hidden */
-      choice = 'ok';
-    }
-    if (!choice) banner.hidden = false;
+    if (storageOk && !choice) banner.hidden = false;
     banner.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-cookie]');
       if (!btn) return;
@@ -38,8 +63,7 @@ const t = common[lang];
         /* ignore */
       }
       banner.hidden = true;
-      // Consent granted: this is the place to lazily load analytics/ads
-      // (e.g. Google Analytics) once the site has a measurement ID.
+      if (btn.dataset.cookie === 'ok') loadAnalytics();
     });
   }
 </script>
